@@ -37,10 +37,11 @@
 		}
 	</style>
 
-	<script type="text/javascript" canvas="canvas">
+	<script type="text/javascript">
+   // paper.install(window);
 		window.onload = function() {
 			var canvas = document.getElementById('myCanvas');
-
+     
 			// coloring page
 			var mandala = {
 				item: null,
@@ -48,9 +49,14 @@
 				filePath: '/static/coloring/images/mandala-freepik.svg'
 			};	
 
+   
+		// Draw the view now:
+
+
+      
 			// color palette
 			var cp = {
-				history: ["#000000"], // black selected by default
+				history: ["#000000", "#FF0000"], // black selected by default
 				options: [],
 				$container: $('#color-palette')
 			}
@@ -59,26 +65,57 @@
 			// you may also add code outside of the function (e.g., global variables)
 			function myGradientInteraction(){
 				var tool = new paper.Tool();
-
+       
+        var rectangle = new paper.Rectangle(new paper.Point(250, 320), new paper.Point(500, 500));
+        var path = new paper.Path.Rectangle(rectangle);
+        
+        //path.fillColor = 'red';
+        path.fillColor = 'red';
+        paper.project.insertLayer(1,path);
+        paper.view.draw()
+       
+        prevPoint = null;
+        isDown = false;
+        
 				tool.onMouseDown = function (event) {
-
+          pos = event.point
+           if(!isDown){
+              if(pos.x>250 && pos.x<500 && pos.y>320 && pos.y<500){
+                prevPoint = event.point;
+                isDown=!isDown;
+             }
+            
+           } 
 				}
 
 				tool.onMouseUp = function (event) {
-					
-				}
+          pos = event.point
+           if(!(pos.x>250 && pos.x<500 && pos.y>320 && pos.y<500)){
+              prevPoint = null
+              isDown=false;
+              return;
+           }
+					 path.fillColor = {
+            gradient: {
+              stops: [cp.history[cp.history.length-2], cp.history[cp.history.length-1]]},
+              origin: prevPoint,
+              destination:pos}
+             isDown=!isDown;
+             paper.view.draw()
+				  }
 			}
 
 			// your custom interaction goes here!
 			// you may replace everything
 			function myCustomInteraction() {
 				var tool = new paper.Tool();
-
+       
 				tool.onMouseDown = function (event) {
-				    var hit = mandala.item.hitTest(event.point, { tolerance: 10, fill: true });
+             var hit = mandala.item.hitTest(event.point, { tolerance: 10, fill: true });
 				    if (hit) {
 				        hit.item.fillColor = cp.history[cp.history.length - 1];
 				    }
+				    
 				}
 			}
 
@@ -93,6 +130,8 @@
 					$swatch.click(function(){
 						// add color to the color palette history
 					  	cp.history.push($(this).css("background-color"));
+           
+              
 					});
 					cp.$container.append($swatch);
 				}
