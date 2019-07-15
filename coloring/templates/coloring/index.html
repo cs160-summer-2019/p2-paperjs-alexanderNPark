@@ -117,13 +117,21 @@
       var itemToChange = null;
       
       var $opacityDiv = $('<div id="opacity" class="row"></div>');
-      var $opacityText = $('<span id="opacityText" class="row">Opacity</span>');
+      var $opacityText = $('<span id="opacityText" class="row">Opacity:</span>');
       var $opacity = $('<input type="range" min="1" max="100" value="50" id="sliders" class="slider">')
       
-      var $currentSpan = $('<div id="currentColorSpan" class="row">Current Color:</div>')
-      var $colorBox = $('<div id="colorBox"></div>');
+      var $currentSpan = $('<div id="currentColorSpan" class="row"></div>')
+      var $colorText = $('<span id="colorText" class="col-3">Selected Color</span>');
+      var $colorBox = $('<span id="colorBox" class="col-2"></span>');
+      var $colorSpanfiller = $('<span class="col-7"></span>');
+      
+      var $checkBoxRow = $('<div id="checkBoxRow" class="row"></div>');
+      var $checkBoxCol = $('<div id="checkBoxCol" class="col"</div>');
+      var $checkBox = $('<input type="checkbox" id="borderIncluded">');
+      var $checkBoxText = $('<span id="borderText" class="col">Include Border:</span>')
       
       var $saveButton = $('<div id="SaveButton" class="row"></div>');
+      
       
       
       var $input = $('<button id="canvasImageSave" download="myPainting.png" class="btn" >Save</button> ');
@@ -139,15 +147,24 @@
         $('body').on('contextmenu', '#myCanvas', function(e){ return false; });
         
 				var tool = new paper.Tool();
-        $currentSpan.html($colorBox);
+        $colorText.appendTo($currentSpan)
+        $colorBox.appendTo($currentSpan);
+        $colorSpanfiller.appendTo($currentSpan)
         $currentSpan.appendTo($("#optionsContainer"));
+         $("#optionsContainer").append("<br><br>")
         
         $opacityDiv.html($opacity)
         $opacityText.appendTo($("#optionsContainer"));
         $opacityDiv.appendTo($("#optionsContainer"));
         
+        $checkBoxCol.html($checkBox)
+        $checkBoxText.appendTo($checkBoxRow)
+        $checkBoxCol.appendTo($checkBoxRow)
+        $checkBoxRow.appendTo($("#optionsContainer"))
+        
+        
         //$('#optionsContainer').hide();
-        $("#optionsContainer").append("<br>")
+        $("#optionsContainer").append("<br><br><br><br><br>")
         $saveButton.html($input)
         $saveButton.appendTo($("#optionsContainer"));
         
@@ -161,11 +178,13 @@
 
                 itemToChange.strokeWidth = 1;
                 itemToChange=null;
+                paper.view.draw()
                 
             }
           
           $opacityText.hide()
           $opacity.hide()
+          $checkBoxRow.hide()
             
             var canvas = document.getElementById("myCanvas");
             var link = document.createElement('a');
@@ -173,12 +192,13 @@
             link.href = canvas.toDataURL("image/png", 1.0).replace("image/png", "image/octet-stream");;
             link.click();
             $input.html("Saved")
-            $input.css("backgroundColor","	rgb(211,211,211)");
+            $input.css("backgroundColor","rgb(211,211,211)");
             $input.prop('disabled', true);
        });
         
         
       $("#myCanvas").mouseover(function(ev){
+         
          $("#myCanvas").css("cursor","url('/static/coloring/images/pencilIco.png'), auto")
         
       })
@@ -187,9 +207,23 @@
        
         
       $opacity[0].oninput = function() {
+          colorContent = itemToChange.fillColor;
+          
+        
           opacityValue = this.value;
-          itemToChange.opacity = this.value/100;
+        
+          if($("#borderIncluded").is(':checked')){
+              itemToChange.opacity = this.value/100;
+          }else{
+             colorContent['alpha'] = this.value/100
+             itemToChange.fillColor = colorContent;
+          }
+          //itemToChange.opacity = this.value/100;
+          
+          
       } 
+      
+      
       
       $("#slideToggle").on('click', function(ev){
         //alert("clicked toggle")
@@ -215,7 +249,7 @@
       });
       $opacityText.hide()
       $opacity.hide()
-        
+      $checkBoxRow.hide()
         
        
 
@@ -248,6 +282,7 @@
 				        hit.item.fillColor = cp.history[cp.history.length - 1];
                 $opacity.show()
                 $opacityText.show()
+                $checkBoxRow.show()
                 $opacity.val(hit.item.opacity*100)
                 itemToChange = hit.item;
                
@@ -290,7 +325,7 @@
 					$swatch.click(function(){
 						// add color to the color palette history
 					  	cp.history.push($(this).css("background-color"));
-           
+              $("#colorBox").css("backgroundColor", $(this).css("background-color"));
               
 					});
 					cp.$container.append($swatch);
@@ -348,6 +383,8 @@
         <br>
 
       </div>
+      <br><br>
+        <br>
       <div id="slideToggle" class="col-1">
         <img src='/static/coloring/images/expandIn.png' id='toggleBar'/>
       </div>
