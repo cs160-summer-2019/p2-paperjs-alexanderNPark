@@ -5,7 +5,9 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   	<title>P3 Coloring</title>
-
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="{% static 'coloring/css/styledComps.css' %}" />
+  
 	<script type="text/javascript" src="{% static 'coloring/vendors/jquery/jquery-3.3.1.min.js' %}"></script>
 	<script type="text/javascript" src="{% static 'coloring/vendors/paper/paper-full.min.js' %}"></script>
 
@@ -56,7 +58,7 @@
       
 			// color palette
 			var cp = {
-				history: ["#000000", "#FF0000"], // black selected by default
+				history: ["rgb(0,0,0)", 'rgb(255,0,0)'], // black selected by default
 				options: [],
 				$container: $('#color-palette')
 			}
@@ -105,18 +107,176 @@
 				  }
 			}
 
+      
+      
+      
+      
+      
+      var opacityValue = 0;
+      var panelShown=true;
+      var itemToChange = null;
+      
+      var $opacityDiv = $('<div id="opacity" class="row"></div>');
+      var $opacityText = $('<span id="opacityText" class="row">Opacity</span>');
+      var $opacity = $('<input type="range" min="1" max="100" value="50" id="sliders" class="slider">')
+      
+      var $currentSpan = $('<div id="currentColorSpan" class="row">Current Color:</div>')
+      var $colorBox = $('<div id="colorBox"></div>');
+      
+      var $saveButton = $('<div id="SaveButton" class="row"></div>');
+      
+      
+      var $input = $('<button id="canvasImageSave" download="myPainting.png" class="btn" >Save</button> ');
+      
+      
+      
+      //$opacity.appendTo($("body"));
+      //$opacity.show();
+      
 			// your custom interaction goes here!
 			// you may replace everything
 			function myCustomInteraction() {
+        $('body').on('contextmenu', '#myCanvas', function(e){ return false; });
+        
 				var tool = new paper.Tool();
+        $currentSpan.html($colorBox);
+        $currentSpan.appendTo($("#optionsContainer"));
+        
+        $opacityDiv.html($opacity)
+        $opacityText.appendTo($("#optionsContainer"));
+        $opacityDiv.appendTo($("#optionsContainer"));
+        
+        //$('#optionsContainer').hide();
+        $("#optionsContainer").append("<br>")
+        $saveButton.html($input)
+        $saveButton.appendTo($("#optionsContainer"));
+        
+        
+        
+        $input.on("click", function(ev){
+             
+            if(itemToChange==null){
+                 
+              }else{
+
+                itemToChange.strokeWidth = 1;
+                itemToChange=null;
+                
+            }
+          
+          $opacityText.hide()
+          $opacity.hide()
+            
+            var canvas = document.getElementById("myCanvas");
+            var link = document.createElement('a');
+            link.download = "myPainting.png";
+            link.href = canvas.toDataURL("image/png", 1.0).replace("image/png", "image/octet-stream");;
+            link.click();
+            $input.html("Saved")
+            $input.css("backgroundColor","	rgb(211,211,211)");
+            $input.prop('disabled', true);
+       });
+        
+        
+      $("#myCanvas").mouseover(function(ev){
+         $("#myCanvas").css("cursor","url('/static/coloring/images/pencilIco.png'), auto")
+        
+      })
+        
+     
        
+        
+      $opacity[0].oninput = function() {
+          opacityValue = this.value;
+          itemToChange.opacity = this.value/100;
+      } 
+      
+      $("#slideToggle").on('click', function(ev){
+        //alert("clicked toggle")
+          if(panelShown){
+            //$('#optionsContainer').animate({width:"0%"});
+            
+          // $('#optionsContainer').animate({width: 'toggle'}, "slow");
+            // $('#optionsContainer').slideToggle(500, function () {})
+            $( "#optionsContainer" ).toggle('slide', function(){
+              $("#toggleBar").attr("src","/static/coloring/images/expandOut.png");
+            });
+            
+            
+          }else{
+            //$('#optionsContainer').slideToggle(500, function () {})
+            $( "#optionsContainer" ).toggle('slide');
+            $("#toggleBar").attr("src","/static/coloring/images/expandIn.png");
+          }
+          panelShown=!panelShown;
+          
+        //$('#optionsContainer').hide("slow")
+        
+      });
+      $opacityText.hide()
+      $opacity.hide()
+        
+        
+       
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+  
+        
+        
 				tool.onMouseDown = function (event) {
-             var hit = mandala.item.hitTest(event.point, { tolerance: 10, fill: true });
+            $input.html("Save")
+            $input.css("backgroundColor","	rgb(0,0,255)");
+            $input.prop('disabled', false);
+            
+            var hit = mandala.item.hitTest(event.point, { tolerance: 10, fill: true });
 				    if (hit) {
+              if(itemToChange==null){
+                
+              }else{
+
+                itemToChange.strokeWidth = 1;
+              }
 				        hit.item.fillColor = cp.history[cp.history.length - 1];
+                $opacity.show()
+                $opacityText.show()
+                $opacity.val(hit.item.opacity*100)
+                itemToChange = hit.item;
+               
+
+                itemToChange.strokeWidth = 4;
+                
 				    }
 				    
 				}
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
 			}
 
 
@@ -180,8 +340,28 @@
 	</script>
 </head>
 <body>	
+  <div id="fullContainer" class="container">
+    <div id="outerRow" class="row">
+      <div id="optionsContainer"  class="col-4">
+        <div id="color-palette" class='row'></div>
+        <br><br>
+        <br>
 
-	<canvas id="myCanvas" width="750px" height="750px"></canvas>
-	<div id="color-palette"></div>
+      </div>
+      <div id="slideToggle" class="col-1">
+        <img src='/static/coloring/images/expandIn.png' id='toggleBar'/>
+      </div>
+    
+      <div id="canvasContain" class="col-7">
+        <canvas id="myCanvas" width="750px" height="750px"></canvas>
+      </div>
+
+    
+    </div>
+    
+  </div>
+  
+  
+	
 </body>
 </html>
